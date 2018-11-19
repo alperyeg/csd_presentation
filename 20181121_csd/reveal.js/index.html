@@ -1,0 +1,482 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Learning to Learn</title>
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/serif.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <!--link rel="stylesheet" href="css/theme/fzj.css"-->
+    <style lang="text/css">
+        .reveal ul {
+            font-size: 25pt;
+        }
+
+        .reveal {
+            font-size: 25pt;
+        }
+
+        .reveal h3 {
+            color: rgb(0, 91, 130)
+        }
+
+        .reveal h4 {
+            color: rgba(36, 81, 132, 0.93)
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+    </style>
+
+    <style type="text/css">
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        #content1 {
+            float: left;
+            width: 40%;
+        }
+
+        #content2 {
+            float: left;
+            width: 60%;
+        }
+    </style>
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+</head>
+<body>
+<div class="reveal">
+    <!--<img id="fzj-logo" src="css/theme/Logo_FZ_Juelich_RGB_Schutzzone_transparent.svg">
+    </img>-->
+    <div class="slides">
+        <section>
+            <!--h6><p style="color:slategray">Parallel Session - AI to Neuroscience</p></h6-->
+            <h3><p style="color: black">Learning to Learn (L2L) via optimization by optimization (L2LO)</p></h3>
+            <!--h4> - Andrychowicz et al. 2016</h4-->
+            <h6><p style="color:slategray">Jülich-Aachen meeting 21.11.2018</p></h6>
+        </section>
+        <section>
+            <h3>Overview</h3>
+            <ul>
+                <li>Introduction</li>
+                <li>L2L (Andrychowicz et al. 2016)</li>
+                <li>LSNN model</li>
+                <li>L2L on LSNN (Bellec et al. 2018)</li>
+                <li>Goals</li>
+            </ul>
+        </section>
+        <section>
+            <h3>Brief Histrory</h3>
+            <ul>
+                <li> Early approaches (meta learning) already 1980/90's by e.g. Schimdhuber, Bengio</li>
+                <li> Later approaches Younger, Hochreiter combined previous works</li>
+                <li> Main idea: One network (meta-learner - optimizer, outer loop) learns to update another network
+                    (learner - optimizee, inner loop)
+                </li>
+                <li> Output of backpropagation from one network is fed into other learning network, training them
+                    jointly
+                </li>
+            </ul>
+        </section>
+        <section>
+            <section>
+                <h3>Learning</h3>
+                In usual ML setting optimize the objective function:
+                \[
+                \theta^* = arg \, min_{\theta \in \Theta}f(\theta_t)
+                \]
+                <p> Done by handcrafted update rules (e.g. SGD, Momentum, ADAM): </p>
+                \[ \theta_{t+1} = \theta -\alpha \nabla f(\theta_t) \]
+                <p>learn instead:</p>
+                \[
+                \theta_{t+1} = \theta + g_t(\nabla f(\theta_t), \phi)
+                \]
+            </section>
+            <section>
+                In L2L the update rule is replaced by an <b>optimizer</b> $\mathit{g}$ with set of parameters $\phi$
+                <table style="width:100%">
+                    <tr>
+                        <td>
+                            \[
+                            \mathcal{L}(\phi) = \mathbb{E}_f\bigg[\sum^{T}_{t=1}w_tf(\theta_t)\bigg]
+                            \]
+                        </td>
+                        <td>
+                            where
+                        </td>
+                        <td>
+                            $\theta_{t+1} = \theta_{t} + g_t$, <br> <br>
+                            $\begin{bmatrix} g_t \\ h_{t+1}\end{bmatrix} = m(\nabla_t, h_t, \phi)$
+                        </td>
+                    </tr>
+                </table>
+            </section>
+            <section>
+                <h4>L2L Scheme</h4>
+                <img src="figs/lsnn_fig2_A.png">
+                </img>
+                <ul>
+                  <li>outer loop can be any optimization algorithm</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Computational graph</h4>
+                <table style="width: 100%">
+                    <tr>
+                        <td width="60%">
+                            <img src="figs/fig2.svg">
+                        </td>
+                        <td>
+                            <ul>
+                                <li>sampling random function $f$</li>
+                                <li>gradients along the dashed edges are not propagated during gradient descent</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </section>
+            <section>
+                <h4> LSTM module</h4>
+                <ul>
+                    <li>Introduced by Hochreiter and Schmidhuber (1997)</li>
+                </ul>
+                <table style="width: 100%">
+                    <tr>
+                        <td width="55%">
+                            <img src="figs/RNN-unrolled.png" width="100%">
+                        </td>
+                        <td>
+                            <figure>
+                                <img style="margin-bottom:0" src="figs/LSTM3-chain.png" width="100%">
+                                <figcaption style="font-size: small;"><a
+                                        href="http://colah.github.io/posts/2015-08-Understanding-LSTMs/">colah.github.io/posts/2015-08-Understanding-LSTMs/</a>
+                                </figcaption>
+                            </figure>
+                        </td>
+                    </tr>
+                </table>
+                <ul>
+                    <li>Register like with trained rules for writing and reading to or from the registers</li>
+                    <li>The value in the memory cell of an LSTM module remains unchanged, unless the input gate is
+                        opened to let new values flow into it
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h4>Coordinatewise LSTM optimizer</h4>
+                Here one step
+                <table style="width: 100%">
+                    <tr>
+                        <td>
+                            <img src="figs/fig3.svg" width="80%"></img>
+                        </td>
+                        <td>
+                            <ul>
+                                <li>2 layer LSTM</li>
+                                <li>Looks at single coordinate (bias or weight), shares parameters</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+                <ul>
+                    <li>Input: optimizee gradient, $h_{t-1}$</li>
+                    <li>Output: Update for corresponding optimizee parameter</li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <h3>Experiments</h3>
+            <img src="figs/fig5.svg" width="80%">
+            <ul>
+                <li>20 hidden units, 2 layer</li>
+                <li>Truncated BPTT, early stopping</li>
+                <li>Minimization via ADAM</li>
+            </ul>
+        </section>
+        <section>
+            <section>
+                <h3>LSNN model</h3>
+                <img src="figs/seq_mnist_c.png" height="40%" width="40%"></img>
+                <ul>
+                    <li>Consists of population $R$ of exc./inh. LIF (leaky integrate and fire) neurons</li>
+                    <li>pop. $A$ of exc. LIF neurons, temporarily excitability reduced through preceeding firing
+                        activity</li>
+                    <li>$X$ is external input, $Y$ external linear readout neurons</li>
+                </ul>
+            </section>
+            <!--section>
+                <h4>Leaky Integrate and Fire neuron</h4>
+                skip?
+            </section-->
+            <section>
+                <h4>Fitting model for adapting neurons</h4>
+                <p>Firing threshold $B_j(t)$ of neuron $j$ increases by some fixed amount $\beta/ \tau_{\alpha, j}$ for
+                    each spike of neuron $j$, then decays exponentially back to a baseline value $b^0_j$ with a time
+                    constant $\tau_{\alpha, j}$</p>
+                <p>$$
+                    B_j(t) = b{_j}^{0} + \beta b_j(t)
+                    \\
+                    b_j (t + \delta t) = \rho_j b_j(t) + (1 - \rho_j)z_j(t)
+                    $$</p>
+                <ul>
+                    <li>$\delta t = 1\,ms$ step size</li>
+                    <li>$\rho_j = \exp(- \frac{\delta t}{\tau_{\alpha,j}})$</li>
+                    <li>$z$ spiketrain</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Backpropagation through time (BPTT) in adapting neurons</h4>
+                Back propagating gradients through discontinuous spikes:
+                <ul>
+                    <li>Simulated dynamics in discrete time</li>
+                    <li>The spikes are expressed using a binary step function H of the scaled membrane
+voltage v(t) (v crosses the threshold at 0 and resting potential is -1)</li>
+                    <li>The gradients are propagated through step functions with a pseudo-derivative</li>
+                </ul>
+                <img src="figs/step_func.png" width="50%">
+                <ul>
+                    <li>Back propagating through many timesteps is subject to exploding-vanishing gradients</li>
+                    <li>The slow dynamics of the adaptive threshold replaces the memory units of LSTM</li>
+                </ul>
+            </section>
+            <section>
+                <h4>BPTT, DEEP R on RSNNs and LSNNs</h4>
+                <ul>
+                    <li>Optimization of synaptic weights and connectivity matrix of LSNN</li>
+                    <li>Optimization algorithm is BPTT, not biological plausible (cf. Bengio 2015)</li>
+                    <li>"Gradient is backpropagated through spikes by replacing the non-existent derivative of the
+                        membrane potential at the time of a spike by a pseudo-derivative that smoothly increases from 0
+                        to 1, and then decays back to 0."
+                    </li>
+                    <li>integrated BPTT with deep rewiring (DEEP R, Bellec et al. 2018, ICLR)</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Dynamics of LSNN</h4>
+                <table style="width: 100%">
+                    <tr>
+                        <td>
+                            <img src="figs/lsnn_fig1_D.png"></img>
+                        </td>
+                      <td>
+                          <ul>
+                              <li>Input image MNIST (number 3), pixel per pixel fed (coordinatewise)</li>
+                              <li>Population coding, thresholded grey values</li>
+                              <li>An additional neuron spikes, induces network output</li>
+                          </ul>
+                      </td>
+                    </tr>
+                </table>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h3>L2L on LSNNs</h3>
+                <table>
+                    <tr>
+                        <td><img src="figs/lsnn_fig2_A.png"></img></td>
+                        <td><img src="figs/lsnn_fig2_B.png"></img></td>
+                    </tr>
+                </table>
+                <ul>
+                    <li>Inner loop: within $\mathcal{N}$, learns the structure of $C$ to maximize $f(C)$, $\Theta$ is fixed</li>
+                    <li>Outer loop: optimizes $\Theta$ to maximize the fitness for all tasks in $F$</li>
+                    <li>$\Theta$, synaptic weights, adaptation are learnt in outer loop</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Training procedure</h4>
+                <ul>
+                    <li>LSNN fed with new sample $(x_1, x_2)$ and target output $C^{\prime}(x^{\prime}_1, x^{\prime}_2)$ from previous example</li>
+                    <li>generates $C(x_1, x_2)$ as target output</li>
+                    <li>500 steps, each step lasts 20 ms</li>
+                    <li>BPTT minimizes MSE between LSNN output and target</li>
+                    <li>using gradients computed over batches of 10 episodes (= 1 iteration of outer loop)</li>
+                    <li>After training weights of LSNN remains fixed, it has to learn input/output behaviour of a target network only with its short-term memory and dynamics </li>
+                    <li>Meaning LSNN is still adaptive, uses short term memory $\Rightarrow$ one-/few-shot learning</li>
+                </ul>
+            </section>
+            <section>
+              <h4>Dynamics of L2L LSNN</h4>
+                    <img src="figs/lsnn_fig2_D.png" style="width:40%; height:40%"></img>
+            </section>
+          </section>
+        <section>
+          <section>
+            <h3>Goals</h3>
+            <h4>Recap of last meeting</h4>
+            <table>
+              <tr>
+                <td>
+                  <img src="figs/dataflow.svg"></img>
+                </td>
+                <td>
+                  <img src="figs/embedding.png" style="width:60%; height:60%"></img>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <ul>
+                    <li> Main goal is to learn how to optimize</li>
+                    <li> How does the system learn? </li>
+                    <li> What are good fitness functions, what is a good performance measure? </li>
+                  </ul>
+                </td>
+              </tr>
+            </table>
+          </section>
+          <section>
+            <h4></h4>
+            <ul>
+              <li> How does the system learn? </li>
+              <li> What are good fitness functions, what is a good performance measure? </li>
+              <li> Depends also on the system architecture: </li>
+            </ul>
+              <table  style="width:100%">
+                <tr>
+                  <td>
+                    SNN
+                  </td>
+                  <td>
+                    STDP, Plasticity
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    ANN
+                  </td>
+                  <td>
+                    gradient descent, momentum methods
+                  </td>
+                </tr>
+              </table>
+          </section>
+          <section>
+            <h4> Further ideas</h4>
+            <ul>
+              <li> Generative Models such as Variational Auto-encoders or GANs to reduce the hyper parameter space dimension to latent spaces (Perceptual Manifolds)</li>
+              <li> In terms of SNN mean field models are interesting, they are reduced models and can be applied for optimized approaches </li>
+              <li> Approaches we have:
+              <ul>
+                <li> gradient descent via BPTT</li>
+                <li> gradient free: Evolutionary strategies (incl. genetic algoriths, random walk)</li>
+              </ul>
+              </li>
+            </ul>
+          </section>
+        </section>
+        <section>
+            <section>
+                <h3>Literature</h3>
+                <ul>
+                    <li>Andrychowicz, Marcin, et al. "Learning to learn by gradient descent by gradient descent."
+                        Advances in Neural Information Processing Systems. 2016.
+                    </li>
+                    <li>Bellec, Guillaume, et al. "Long short-term memory and Learning-to-learn in networks of spiking
+                        neurons." arXiv preprint arXiv:1803.09574 (2018).
+                    </li>
+                    <li> Bellec, Guillaume, et al. "Deep Rewiring: Training very sparse deep networks." arXiv preprint arXiv:1711.05136 (2017).
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h3>Further reading</h3>
+                <ul>
+                    <li>Chen, Yutian, et al. "Learning to learn without gradient descent by gradient descent." arXiv
+                        preprint arXiv:1611.03824 (2016)
+                    </li>
+                    <li>Metz, Luke, et al. "Learning Unsupervised Learning Rules." arXiv preprint arXiv:1804.00222
+                        (2018)
+                    </li>
+                    <li> Huh, Dongsung, and Terrence J. Sejnowski. "Gradient descent for spiking neural networks." arXiv preprint arXiv:1706.04698 (2017).
+                    </li>
+                    <li> Chung, SueYeon, et al. "Learning data manifolds with a cutting plane method." Neural computation 30.10 (2018): 2593-2615.
+                    </li>
+                    <li>Chung, SueYeon, Daniel D. Lee, and Haim Sompolinsky. "Classification and geometry of general perceptual manifolds." Physical Review X 8.3 (2018): 031003.
+                    </li>
+                </ul>
+            </section>
+            <section>
+              <ul>
+                <li> Huh, Dongsung, and Terrence J. Sejnowski. "Gradient descent for spiking neural networks." arXiv preprint arXiv:1706.04698 (2017). </li>
+                <li> Maddison, Chris J., et al. "Hamiltonian Descent Methods." arXiv preprint arXiv:1809.05042 (2018).</li>
+                <li> Bengio, Yoshua, et al. "Towards biologically plausible deep learning." arXiv preprint arXiv:1502.04156 (2015). </li>
+                <li> Finn, Chelsea, Pieter Abbeel, and Sergey Levine. "Model-agnostic meta-learning for fast adaptation of deep networks." arXiv preprint arXiv:1703.03400 (2017).</li>
+                <li> Li, Zhenguo, et al. "Meta-sgd: Learning to learn quickly for few shot learning." arXiv preprint arXiv:1707.09835 (2017).</li>
+              </ul>
+            </section>
+            <section>
+              <ul>
+                <li>Pandarinath, Chethan, et al. "Inferring single-trial neural population dynamics using sequential auto-encoders." Nature methods (2018): 1. </li>
+                <li>Arjovsky, Martin, and Léon Bottou. "Towards principled methods for training generative adversarial networks." arXiv preprint arXiv:1701.04862 (2017). </li>
+                <li>Scellier B and Bengio Y (2017) Equilibrium Propagation: Bridging the Gap between Energy-Based Models and Backpropagation. Front. Comput. Neurosci. 11:24. doi: 10.3389/fncom.2017.00024</li>
+                <li>Bartunov, Sergey, et al. "Assessing the scalability of biologically-motivated deep learning algorithms and architectures." arXiv preprint arXiv:1807.04587 (2018). </li>             
+              </ul>
+            </section>
+            <section>
+              <ul>
+                <li> Zhang, Jingwei, Tongliang Liu, and Dacheng Tao. "An Information-Theoretic View for Deep Learning." arXiv preprint arXiv:1804.09060 (2018).</li>
+                <li>Choromanska, Anna, et al. "The loss surfaces of multilayer networks." Artificial Intelligence and Statistics. 2015.</li>
+                <li>Du, Simon S., et al. "Gradient descent provably optimizes over-parameterized neural networks." arXiv preprint arXiv:1810.02054 (2018).</li>
+                <li>Du, Simon S., et al. "Gradient Descent Finds Global Minima of Deep Neural Networks." arXiv preprint arXiv:1811.03804 (2018).</li>
+              </ul>
+            </section>
+        </section>
+    </div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+
+<script>
+    // More info about config & dependencies:
+    // - https://github.com/hakimel/reveal.js#configuration
+    // - https://github.com/hakimel/reveal.js#dependencies
+    Reveal.initialize({
+        // Push each slide change to the browser history
+        history: true,
+
+        math: {
+            mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+            config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
+        },
+        dependencies: [
+            {src: 'plugin/markdown/marked.js'},
+            {src: 'plugin/markdown/markdown.js'},
+            {src: 'plugin/notes/notes.js', async: true},
+            {src: 'plugin/math/math.js', async: true},
+            // Zoom in and out with Alt+click
+            {src: 'plugin/zoom-js/zoom.js', async: true},
+            {
+                src: 'plugin/highlight/highlight.js',
+                async: true,
+                callback: function () {
+                    hljs.initHighlightingOnLoad();
+                }
+            }
+        ]
+    });
+</script>
+</body>
+</html>
