@@ -126,12 +126,18 @@
                             where
                         </td>
                         <td>
-                            $\theta_{t+1} = \theta_{t} + g_t$, <br> <br>
-                            $\begin{bmatrix} g_t \\ h_{t+1}\end{bmatrix} = m(\nabla_t, h_t, \phi)$
+                          $\theta_{t+1} = \theta_{t} + g_t$, <br><br>
+                          $\begin{bmatrix} g_t \\ h_{t+1}\end{bmatrix} = m(\nabla_t, h_t, \phi)$
                         </td>
                     </tr>
-                </table>
-            </section>
+                  </table>
+                  <ul>
+                    <li> Here, $g_t$ is an output of an RNN $m$ with state $h_t$</li>
+                    <li> $\nabla_t = \nabla_{\theta} f(\theta_t)$</li>
+                    <li> $\mathcal{L}(\phi)$ is minimized using gradient descent on $\phi$ </li>
+                    <li> $\partial \mathcal{L} / \partial \phi$ computed by sampling a random function $f$</li>
+                  </ul>
+                </section>
             <section>
                 <h4>L2L Scheme</h4>
                 <img src="figs/lsnn_fig2_A.png">
@@ -189,12 +195,13 @@
                 <table style="width: 100%">
                     <tr>
                         <td>
-                            <img src="figs/fig3.svg" width="80%"></img>
+                            <img src="figs/fig3.svg" style="width:100%; height:100%"></img>
                         </td>
                         <td>
                             <ul>
                                 <li>2 layer LSTM</li>
-                                <li>Looks at single coordinate (bias or weight), shares parameters</li>
+                                <li>Looks at single coordinate (bias or weight),</li>
+                                <li>shares parameters</li>
                             </ul>
                         </td>
                     </tr>
@@ -254,10 +261,10 @@
 voltage v(t) (v crosses the threshold at 0 and resting potential is -1)</li>
                     <li>The gradients are propagated through step functions with a pseudo-derivative</li>
                 </ul>
-                <img src="figs/step_func.png" width="50%">
+                <img src="figs/step_func.png" width="50%"></img>
                 <ul>
-                    <li>Back propagating through many timesteps is subject to exploding-vanishing gradients</li>
-                    <li>The slow dynamics of the adaptive threshold replaces the memory units of LSTM</li>
+                  <li>The slow dynamics of the adaptive threshold replaces the memory units of LSTM</li>
+                  <li>Back propagating through many timesteps is subject to exploding-vanishing gradients</li>
                 </ul>
             </section>
             <section>
